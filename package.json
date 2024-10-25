@@ -1,0 +1,31 @@
+{
+  "name": "TaskFlow",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "env-cmd -f .env.development nodemon --exec \"ts-node src/index.ts\" --watch \"src/**/*.ts\"",
+    "prod": "env-cmd -f .env.production node dist/index.js",
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/mocha": "^10.0.9",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "env-cmd": "^10.1.0",
+    "express": "^4.21.1",
+    "firebase": "^11.0.1",
+    "firebase-admin": "^12.6.0",
+    "ts-jest": "^29.2.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.5",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
