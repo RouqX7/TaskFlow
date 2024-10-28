@@ -1,11 +1,3 @@
-import { Router } from "express";
-import { Routes } from "./routePaths";
-const router = Router();
+import  v1Router from "./v1/v1";
 
-router.get(Routes.health,(req,res) => {
-    res.status(200).send({
-        message: 'Welcome to TaskFlow v1: Server is up and running!'
-    })
-});
-
-export default router;
+export default  v1Router;

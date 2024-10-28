@@ -4,6 +4,7 @@ import { getDatabase } from "firebase-admin/database";
 import { getFirestore } from "firebase-admin/firestore";
 import { getAuth as getAdminAuth } from "firebase-admin/auth"; 
 import { getAuth as getClientAuth } from "firebase/auth"; 
+import { profile } from "console";
 
 // Firebase Admin SDK initialization (server-side)
 export const firebaseAdminSdkBase64 = process.env.FIREBASE_ADMIN_SDK_BASE64 ?? '';
@@ -49,3 +50,6 @@ export {
     firestoreAdmin
 };
 
+export const DBPath = {
+    profile: 'profile',
+}
