@@ -2,6 +2,7 @@ import { DatabaseProviderType } from "../../../types";
 import { Routes } from "../routePaths";
 import { Router } from "express";
 import AuthController from "../../../services/auth/Auth.controller";
+import { v1 } from "firebase-admin/firestore";
 
 const v1Router = Router();
 
@@ -27,5 +28,30 @@ v1Router.get(Routes.login,async (req,res) => {
         });
     }
 });
+
+v1Router.post(Routes.register, async (req,res) => {
+    try {
+        res.json(await auth.register(req.body));
+    } catch (err:unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status:"error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.post(Routes.user, async (req, res) => {
+    try {
+      const response = await auth.addUser(req.body);
+      res.json(response);
+    } catch (err: unknown) {
+      const error = err as Error;
+      res.status(500).send({
+        status: "error",
+        message: error.message,
+      });
+    }
+  });
 
 export default v1Router;

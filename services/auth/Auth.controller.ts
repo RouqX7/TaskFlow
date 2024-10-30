@@ -1,4 +1,4 @@
-import { DatabaseProviderType, DBResponse } from "../../types";
+import { DatabaseProviderType, DBResponse, Profile } from "../../types";
 import FirebaseAuth from "./FirebaseAuth";
 import IAuth from "./IAuth";
 
@@ -13,6 +13,7 @@ class AuthController implements IAuth {
         this.auth = new FirebaseAuth();
     }
     
+    
         getInstanceOfAuth(): IAuth {
         return this.auth;
     }
@@ -24,8 +25,10 @@ class AuthController implements IAuth {
         throw new Error("Method not implemented.");
     }
     register(data: Record<string, unknown>): Promise<DBResponse<{ token: string; uid: string; }>> {
-        throw new Error("Method not implemented.");
+        return this.auth.register(data);
     }
-    
+    addUser(data: Profile): Promise<DBResponse<string>> {
+        return this.auth.addUser(data);
+    }
 }
 export default AuthController;
