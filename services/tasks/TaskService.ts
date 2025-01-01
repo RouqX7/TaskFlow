@@ -1,0 +1,177 @@
+import exp from "constants";
+import { firestoreAdmin } from "../../config/firebase_config";
+import Log from "../../helpers/logger";
+import { DBResponse } from "../../types";
+import { Task } from "../../models/Task";
+import { v4 as uuidv4 } from "uuid"; 
+import Joi from "joi";
+
+const TASKS_COLLECTION = "tasks";
+
+// Define the schema for Task
+const taskSchema = Joi.object({
+    id: Joi.string().optional(),
+    title: Joi.string().required(),
+    description: Joi.string().default(""),
+    assignedTo: Joi.string().default(""),
+    status: Joi.string().valid("pending", "in-progress", "completed").required(),
+    priority: Joi.string().valid("low", "medium", "high").default("medium"),
+    dueDate: Joi.date().default(null),
+    createdAt: Joi.date().default(() => new Date()),
+    updatedAt: Joi.date().default(() => new Date()),
+});
+
+
+export const createTask = async (task: Partial<Task>): Promise<DBResponse<string>> => {
+    try {
+        // Add a generated ID to the task
+        const taskWithId = { id: uuidv4(), ...task };
+
+        // Validate task input with schema
+        const validatedTask = await taskSchema.validateAsync(taskWithId, { abortEarly: false });
+
+        // Add to Firestore
+        await firestoreAdmin.collection(TASKS_COLLECTION).doc(validatedTask.id).set(validatedTask);
+
+        return {
+            success: true,
+            message: "Task added successfully",
+            status: 200,
+            data: validatedTask, 
+        };
+    } catch (error) {
+        // Joi error handling
+        return {
+            success: false,
+            message: "Validation failed: " + (error as any).message,
+            status: 400,
+        };
+    }
+};
+
+    export const getTaskById = async (taskId: string): Promise<DBResponse<Task>> => {
+        try {
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).doc(taskId).get();
+            if (result.exists) {
+                return Promise.resolve({
+                    success: true,
+                    message: "Task found",
+                    status: 200,
+                    data: result.data() as Task
+                });
+            } else {
+                return {
+                    success: false,
+                    message: "Task not found",
+                    status: 404
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to get task: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+
+    export const updateTask = async (taskId: string, task: Task): Promise<DBResponse<void>> => {
+        try {
+            await firestoreAdmin.collection(TASKS_COLLECTION).doc(taskId).set(task);
+            return Promise.resolve({
+                success: true,
+                message: "Task updated successfully",
+                status: 200
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to update task: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+
+    export const deleteTask = async (taskId: string): Promise<DBResponse<void>> => {
+        try {
+            await firestoreAdmin.collection(TASKS_COLLECTION).doc(taskId).delete();
+            return Promise.resolve({
+                success: true,
+                message: "Task deleted successfully",
+                status: 200
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to delete task: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+
+    export const getTasks = async (): Promise<DBResponse<Task[]>> => {
+        try {
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).get();
+            const tasks: Task[] = [];
+            result.forEach((doc) => {
+                tasks.push(doc.data() as Task);
+            });
+            return Promise.resolve({
+                success: true,
+                message: "Tasks found",
+                status: 200,
+                data: tasks
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to get tasks: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+
+    export const getTasksByStatus = async (status: Task["status"]): Promise<DBResponse<Task[]>> => {
+        try {
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).where("status", "==", status).get();
+            const tasks: Task[] = [];
+            result.forEach((doc) => {
+                tasks.push(doc.data() as Task);
+            });
+            return Promise.resolve({
+                success: true,
+                message: "Tasks found",
+                status: 200,
+                data: tasks
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to get tasks: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+
+    export const getTasksByAssignee = async (assignee: string): Promise<DBResponse<Task[]>> => {
+        try {
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).where("assignedTo", "==", assignee).get();
+            const tasks: Task[] = [];
+            result.forEach((doc) => {
+                tasks.push(doc.data() as Task);
+            });
+            return Promise.resolve({
+                success: true,
+                message: "Tasks found",
+                status: 200,
+                data: tasks
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: "Failed to get tasks: " + (error as any).message,
+                status: 500
+            };
+        }
+    }
+

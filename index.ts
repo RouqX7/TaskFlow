@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import express from 'express'
 import Router from './routes'
-import Log from '../helpers/logger';
+import Log from './helpers/logger';
 
 dotenv.config();
 Log.info('Routes loaded');

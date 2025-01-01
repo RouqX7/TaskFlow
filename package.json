@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "env-cmd -f .env.development nodemon --exec \"ts-node src/index.ts\" --watch \"src/**/*.ts\"",
-    "prod": "env-cmd -f .env.production node dist/index.js",
+    "start": "node dist/src/index.js",
+    "dev": "env-cmd -f .env.development nodemon --exec \"ts-node index.ts\" --watch \"src/**/*.ts\"",
+    "prod": "env-cmd -f .env.production node dist/src/index.js",
     "build": "tsc -p ."
   },
   "dependencies": {
@@ -14,12 +14,14 @@
     "@types/mocha": "^10.0.9",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "env-cmd": "^10.1.0",
     "express": "^4.21.1",
     "firebase": "^11.0.1",
     "firebase-admin": "^12.6.0",
-    "ts-jest": "^29.2.5"
+    "joi": "^17.13.3",
+    "ts-jest": "^29.2.5",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

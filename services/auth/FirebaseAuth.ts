@@ -3,8 +3,9 @@ import { validateStringType } from "../../helpers/typeValidator";
 import { DBResponse, Profile } from "../../types";
 import IAuth from "./IAuth";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { DBPath, firebaseAuthClient, firestoreAdmin } from "../../config/firebase_config";
+import {  firebaseAuthClient, firestoreAdmin } from "../../config/firebase_config";
 import Log from "../../helpers/logger";
+import { DBPath } from "../../config/constants";
 import { defaultProfile } from "../../helpers/ModelMocks";
 
 

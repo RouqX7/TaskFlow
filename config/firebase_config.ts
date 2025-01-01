@@ -3,18 +3,37 @@ import { initializeApp as initApp } from "firebase/app";
 import { getDatabase } from "firebase-admin/database";
 import { getFirestore } from "firebase-admin/firestore";
 import { getAuth as getAdminAuth } from "firebase-admin/auth"; 
+import dotenv from 'dotenv';
 import { getAuth as getClientAuth } from "firebase/auth"; 
+dotenv.config({ path: '.env.development' });
 import { profile } from "console";
+import Log from "../helpers/logger";
 
 // Firebase Admin SDK initialization (server-side)
 export const firebaseAdminSdkBase64 = process.env.FIREBASE_ADMIN_SDK_BASE64 ?? '';
-const firebaseAdminSdkBuffer = Buffer.from(firebaseAdminSdkBase64, 'base64');
-const firebaseAdminSdkConfig = JSON.parse(firebaseAdminSdkBuffer.toString('utf-8'));
+"console.log('firebaseAdminSdkBase64:', process.env.FIREBASE_ADMIN_SDK_BASE64);"
+"console.log('firebaseAdminSdkBase64:', firebaseAdminSdkBase64);"
+
+let config;
+
+if (!firebaseAdminSdkBase64) {
+    throw new Error("Firebase Admin SDK base64 string is empty.");
+}
+
+try {
+    const firebaseAdminSdkBuffer = Buffer.from(firebaseAdminSdkBase64, 'base64');
+    config = JSON.parse(firebaseAdminSdkBuffer.toString('utf-8'));
+"    Log.quiet('Firebase Admin SDK config parsed successfully:', config);"
+} catch (error) {
+    console.error('Error parsing Firebase Admin SDK config:', error);
+    throw new Error("Invalid Firebase Admin SDK base64 string or JSON format.");
+}
 
 const firebaseAdminConfig = {
-    credential: cert(firebaseAdminSdkConfig),
+    credential: cert(config),  // Use 'config' here
     databaseURL: process.env.FIREBASE_DATABASE_URL,
 };
+
 
 // Initialize Firebase Admin SDK
 const firebaseAdminApp = initializeApp(firebaseAdminConfig);
