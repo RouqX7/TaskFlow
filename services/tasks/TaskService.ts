@@ -60,7 +60,7 @@ export const createTask = async (task: Partial<Task>): Promise<DBResponse<string
 };
 
 
-    export const getTaskById = async (id: string): Promise<DBResponse<Task>> => {
+    export const getTask = async (id?: string): Promise<DBResponse<Task>> => {
         if (!id) {
             return {
                 success: false,
@@ -93,15 +93,26 @@ export const createTask = async (task: Partial<Task>): Promise<DBResponse<string
         }
     }
 
-    export const updateTask = async (taskId: string, task: Task): Promise<DBResponse<void>> => {
+    export const updateTask = async (id: string,data: Record<string, unknown>): Promise<DBResponse<Task>> => {
+        if(!id) {
+            return {
+                success: false,
+                message: "Task ID is required",
+                status: 400
+            };
+        }
         try {
-            await firestoreAdmin.collection(TASKS_COLLECTION).doc(taskId).set(task);
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).doc(id).update(data);
+            const task = await getTask(id);
+            Log.quiet("Task updated successfully:", result.writeTime );
             return Promise.resolve({
                 success: true,
                 message: "Task updated successfully",
-                status: 200
+                status: 200,
+                data: task.data
             });
         } catch (error) {
+            Log.error("Failed to update task:", (error as any).message);
             return {
                 success: false,
                 message: "Failed to update task: " + (error as any).message,

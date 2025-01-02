@@ -3,7 +3,7 @@ import { Routes } from "../routePaths";
 import { Router } from "express";
 import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
-import { createTask, deleteTask, getTaskById, getTasks } from "../../services/tasks/TaskService";
+import { createTask, deleteTask, getTask, getTasks, updateTask } from "../../services/tasks/TaskService";
 
 const v1Router = Router();
 
@@ -106,7 +106,7 @@ v1Router.delete(Routes.tasks, async (req, res) => {
 v1Router.get(Routes.tasks, async (req, res) => {
     try {
         const id = req.query.id as string;
-        const response = await getTaskById(id);
+        const response = await getTask(id);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;
@@ -116,5 +116,20 @@ v1Router.get(Routes.tasks, async (req, res) => {
         });
     }
 });
+
+v1Router.put(Routes.tasks, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await updateTask(id, req.body);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
     
 export default v1Router;
