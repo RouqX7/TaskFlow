@@ -3,7 +3,7 @@ import { Routes } from "../routePaths";
 import { Router } from "express";
 import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
-import { createTask, deleteTask, getTasks } from "../../services/tasks/TaskService";
+import { createTask, deleteTask, getTaskById, getTasks } from "../../services/tasks/TaskService";
 
 const v1Router = Router();
 
@@ -72,7 +72,7 @@ v1Router.post(Routes.user, async (req, res) => {
     }
 });
 
-v1Router.get(Routes.tasks, async (req, res) => {
+v1Router.get(Routes.taskList, async (req, res) => {
     try {
         const response = await getTasks();
         res.status(response.status).json(response);
@@ -85,9 +85,28 @@ v1Router.get(Routes.tasks, async (req, res) => {
     }
 });
 
+v1Router.delete(Routes.tasks, async (req, res) => {
+    try {
+        const id = req.query?.id as string | undefined;
+        if (!id) {
+            throw new Error("Task ID is required");
+        }
+        const response = await deleteTask(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+//taskById
 v1Router.get(Routes.tasks, async (req, res) => {
     try {
-        const response = await deleteTask(req.params.id);
+        const id = req.query.id as string;
+        const response = await getTaskById(id);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;

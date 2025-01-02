@@ -5,4 +5,5 @@ export const Routes = {
     logout: '/logout',
     user: '/user',
     tasks: '/tasks',
+    taskList: '/tasks/list',
 }

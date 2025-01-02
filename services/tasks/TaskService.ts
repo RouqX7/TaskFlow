@@ -25,10 +25,20 @@ const taskSchema = Joi.object({
 export const createTask = async (task: Partial<Task>): Promise<DBResponse<string>> => {
     try {
         // Add a generated ID to the task
-        const taskWithId = { id: uuidv4(), ...task };
+        const taskWithDefaults = {
+            id: uuidv4(),
+            title: task.title ?? "",
+            description: task.description ?? "", 
+            assignedTo: task.assignedTo ?? "", 
+            status: task.status ?? "pending", 
+            priority: task.priority ?? "low", 
+            dueDate: task.dueDate ?? null,
+            createdAt: new Date(), 
+            updatedAt: new Date(), 
+        };
 
         // Validate task input with schema
-        const validatedTask = await taskSchema.validateAsync(taskWithId, { abortEarly: false });
+        const validatedTask = await taskSchema.validateAsync(taskWithDefaults, { abortEarly: false });
 
         // Add to Firestore
         await firestoreAdmin.collection(TASKS_COLLECTION).doc(validatedTask.id).set(validatedTask);
@@ -37,7 +47,7 @@ export const createTask = async (task: Partial<Task>): Promise<DBResponse<string
             success: true,
             message: "Task added successfully",
             status: 200,
-            data: validatedTask, 
+            data: validatedTask.id, // Return the ID for reference
         };
     } catch (error) {
         // Joi error handling
@@ -49,9 +59,17 @@ export const createTask = async (task: Partial<Task>): Promise<DBResponse<string
     }
 };
 
-    export const getTaskById = async (taskId: string): Promise<DBResponse<Task>> => {
+
+    export const getTaskById = async (id: string): Promise<DBResponse<Task>> => {
+        if (!id) {
+            return {
+                success: false,
+                message: "Task ID is required",
+                status: 400,
+            };
+        }
         try {
-            const result = await firestoreAdmin.collection(TASKS_COLLECTION).doc(taskId).get();
+            const result = await firestoreAdmin.collection(TASKS_COLLECTION).doc(id!).get();
             if (result.exists) {
                 return Promise.resolve({
                     success: true,
