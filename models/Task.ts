@@ -4,6 +4,7 @@ export type Task = {
     description?: string;
     status: "pending" | "in-progress" | "completed";
     assignedTo?: string;
+    assignedBy: string;
     createdAt: Date;
     updatedAt?: Date;
     dueDate?: Date;

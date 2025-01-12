@@ -6,4 +6,7 @@ export const Routes = {
     user: '/user',
     tasks: '/tasks',
     taskList: '/tasks/list',
+    tasksByUser: '/tasks/user/:userId',
+    tasksByStatus: '/tasks/status/:status',
+    tasksByAssignee: '/tasks/assignee/:assignee'
 }

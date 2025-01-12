@@ -3,7 +3,7 @@ import { Routes } from "../routePaths";
 import { Router } from "express";
 import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
-import { createTask, deleteTask, getTask, getTasks, updateTask } from "../../services/tasks/TaskService";
+import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
 
 const v1Router = Router();
 
@@ -61,7 +61,8 @@ v1Router.post(Routes.user, async (req, res) => {
 
   v1Router.post(Routes.tasks, async (req, res) => {
     try {
-        const response = await createTask(req.body);
+        const userId = req.body.userId;
+        const response = await createTask(req.body, userId);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;
@@ -131,5 +132,47 @@ v1Router.put(Routes.tasks, async (req, res) => {
     }
 }
 );
-    
+
+v1Router.get(Routes.tasksByUser, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const response = await getTasksByUser(userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.get(Routes.tasksByStatus, async (req, res) => {
+    try {
+        const status = req.params.status;
+        const response = await getTasksByStatus(status);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.get(Routes.tasksByAssignee, async (req, res) => {
+    try {
+        const assignee = req.params.assignee;
+        const response = await getTasksByUser(assignee);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
 export default v1Router;
