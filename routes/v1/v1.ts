@@ -4,6 +4,7 @@ import { Router } from "express";
 import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
 import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
+import { createProject } from "../../services/project/ProjectService";
 
 const v1Router = Router();
 
@@ -174,5 +175,22 @@ v1Router.get(Routes.tasksByAssignee, async (req, res) => {
         });
     }
 });
+
+//project routes
+
+v1Router.post(Routes.projects, async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const response = await createProject(req.body, userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
 
 export default v1Router;
