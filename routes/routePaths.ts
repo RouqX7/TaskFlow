@@ -11,4 +11,8 @@ export const Routes = {
     tasksByAssignee: '/tasks/assignee/:assignee',
     // project routes
     projects: '/projects',
+    projectList: '/projects/list',
+    //project team routes
+    addTeamMember: '/projects/:projectId/team/add',
+    removeTeamMember: '/projects/:projectId/team/remove'
 }

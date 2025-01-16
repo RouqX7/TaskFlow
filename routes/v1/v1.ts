@@ -4,7 +4,7 @@ import { Router } from "express";
 import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
 import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
-import { createProject } from "../../services/project/ProjectService";
+import { addTeamMember, createProject, getAllProjects, removeTeamMember, updateProject } from "../../services/project/ProjectService";
 
 const v1Router = Router();
 
@@ -191,6 +191,83 @@ v1Router.post(Routes.projects, async (req, res) => {
         });
     }
 });
+
+
+v1Router.get(Routes.projectList, async (req, res) => {
+    try {
+        const response = await getAllProjects();
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.delete(Routes.projects, async (req, res) => {
+    try {
+        const id = req.query?.id as string | undefined;
+        if (!id) {
+            throw new Error("Project ID is required");
+        }
+        const response = await deleteTask(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+//projectById
+
+v1Router.get(Routes.projects, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await getTask(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.put(Routes.projects, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await updateProject(id, req.body);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.post(Routes.addTeamMember, async (req, res) => {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+    const response = await addTeamMember(projectId, userId);
+    res.status(response.status).json(response);
+});
+
+v1Router.post(Routes.removeTeamMember, async (req, res) => {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+    const response = await removeTeamMember(projectId, userId);
+    res.status(response.status).json(response);
+});
+
 
 
 export default v1Router;

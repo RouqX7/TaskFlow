@@ -123,45 +123,41 @@ export const getProjectsByUser = async (userId: string): Promise<DBResponse<Proj
     }
 };
 
-export const updateProject = async (
-    projectId: string,
-    project: Partial<Project>
-): Promise<DBResponse<string>> => {
-    try {
-        const projectRef = firestoreAdmin.collection(DBPath.project).doc(projectId);
-        const existingProject = await projectRef.get();
-
-        if (!existingProject.exists) {
-            return {
-                success: false,
-                message: "Project not found",
-                status: 404,
-            };
-        }
-
-        const updatedProject = {
-            ...existingProject.data(),
-            ...project,
-            updatedAt: new Date(),
-        } as Project;
-
-        const validatedProject = await projectSchema.validateAsync(updatedProject, {
+export const updateProject = async (id: string, data: Partial<Project>): Promise<DBResponse<Project>> => {
+    if(!id) {
+        return {
+            success: false,
+            message: "Project ID is required",
+            status: 400,
+        };
+    }
+    try{
+        const partialSchema = projectSchema.fork(Object.keys(projectSchema.describe().keys), (field) =>
+            field.optional()
+        );
+        const validatedProject = await partialSchema.validateAsync(
+            {
+            ...data, 
+        updatedAt: new Date(),
+    }, 
+    {
             abortEarly: false,
         });
 
-        await projectRef.set(validatedProject);
+        await firestoreAdmin.collection(DBPath.project).doc(id).update(validatedProject);
 
+        const updatedProject = await  getProjectById(id);
         return {
             success: true,
             message: "Project updated successfully",
             status: 200,
-            data: projectId,
+            data: updatedProject.data,
         };
     } catch (error) {
         return {
             success: false,
-            message: "Validation failed: " + (error as any).message,
-            status: 400,
+            message: "Error updating project: " + (error as any).message,
+            status: 500,
         };
     }
 };
@@ -281,4 +277,35 @@ export const removeTeamMember = async (
         };
     }
 };
+
+export const getAllProjects = async (): Promise<DBResponse<Project[]>> => {
+    try {
+        const projects = await firestoreAdmin.collection(DBPath.project).get();
+        if (projects.empty) {
+            return {
+                success: false,
+                message: "No projects found",
+                status: 404,
+            };
+        }
+
+        const projectList: Project[] = [];
+        projects.forEach((project) => {
+            projectList.push(project.data() as Project);
+        });
+
+        return {
+            success: true,
+            message: "Projects found",
+            status: 200,
+            data: projectList,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Error fetching projects: " + (error as any).message,
+            status: 500,
+        };
+    }
+}
 
