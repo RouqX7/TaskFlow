@@ -62,9 +62,17 @@ export const createProject = async (
     }
 };
 
-export const getProjectById = async (projectId: string): Promise<DBResponse<Project>> => {
+export const getProjectById = async (id?: string): Promise<DBResponse<Project>> => {
+    if (!id) {
+        return {
+            success: false,
+            message: "Project ID is required",
+            status: 400,
+        };
+    }
+
     try {
-        const project = await firestoreAdmin.collection(DBPath.project).doc(projectId).get();
+        const project = await firestoreAdmin.collection(DBPath.project).doc(id).get();
         if (!project.exists) {
             return {
                 success: false,
@@ -86,7 +94,7 @@ export const getProjectById = async (projectId: string): Promise<DBResponse<Proj
             status: 500,
         };
     }
-};
+}
 
 export const getProjectsByUser = async (userId: string): Promise<DBResponse<Project[]>> => {
     try {
