@@ -5,7 +5,7 @@ import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
 import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
 import { addTeamMember, createProject, getAllProjects, getProjectById, getProjectsByUser, removeTeamMember, updateProject } from "../../services/project/ProjectService";
-import { createComment, getAllComments, getComment, updateComment } from "../../services/comment/CommentService";
+import { createComment, getAllComments, getComment, getCommentsByTask, getCommentsByUser, updateComment } from "../../services/comment/CommentService";
 const v1Router = Router();
 
 const provider: DatabaseProviderType = process.env
@@ -364,5 +364,66 @@ v1Router.get(Routes.commentList, async (req, res) => {
         });
     }
 });
+
+v1Router.get(Routes.commentsByTask, async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const response = await getCommentsByTask(taskId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.getCommentsByUser, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const response = await getCommentsByUser(userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.getCommentsByContent, async (req, res) => {
+    try {
+        const content = req.params.content;
+        const response = await getCommentsByUser(content);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.getCommentsByTaskAndUser, async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const userId = req.params.userId;
+        const response = await getCommentsByTask(taskId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
 
 export default v1Router;

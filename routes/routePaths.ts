@@ -1,3 +1,5 @@
+import { getCommentsByUser } from "../services/comment/CommentService";
+
 export const Routes = {
     health: '/health',
     login: '/login',
@@ -13,14 +15,18 @@ export const Routes = {
     projects: '/projects',
     getProjectsByUser: '/projects/user/:userId' ,
     projectList: '/projects/list',
+    
     //project team routes
     addTeamMember: '/projects/:projectId/team/add',
     removeTeamMember: '/projects/:projectId/team/remove',
-    //projectById
 
-    //comment routes
+     //comment routes
     comment: '/comment',
     commentList: '/comment/list',
+    commentsByTask: '/comment/task/:taskId',
+    getCommentsByUser: '/comment/user/:userId',
+    getCommentsByContent: '/comment/content/:content',
+    getCommentsByTaskAndUser: '/comment/task/:taskId/user/:userId',
     
     
     

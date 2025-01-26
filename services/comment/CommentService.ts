@@ -177,5 +177,64 @@ export const getAllComments = async (): Promise<DBResponse<Comment[]>> => {
     }
 };
 
+ const queryCommentsByField = async (field: string, value: string): Promise<DBResponse<Comment[]>> => {
+    try{
+        const result = await firestoreAdmin
+        .collection(DBPath.comments)
+        .where(field, '==', value)
+        .get();
+        const comments: Comment[] = result.docs.map((doc) => doc.data() as Comment);
+        return {
+            success: true,
+            message: 'Comments found',
+            status: 200,
+            data: comments
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: 'Failed to get Comments: ' + (error as any).message,
+            status: 500
+        };
+    }
+};
+
+export const getCommentsByTask = async (taskId: string): Promise<DBResponse<Comment[]>> => {
+    return queryCommentsByField('taskId', taskId);
+};
+
+export const getCommentsByUser = async (userId: string): Promise<DBResponse<Comment[]>> => {
+    return queryCommentsByField('userId', userId);
+};
+
+export const getCommentsByContent = async (content: string): Promise<DBResponse<Comment[]>> => {
+    return queryCommentsByField('content', content);
+};
+
+
+export const getCommentsByTaskAndUser = async (taskId: string, userId: string): Promise<DBResponse<Comment[]>> => {
+    try {
+        const result = await firestoreAdmin
+            .collection(DBPath.comments)
+            .where('taskId', '==', taskId)
+            .where('userId', '==', userId)
+            .get();
+        const comments: Comment[] = result.docs.map((doc) => doc.data() as Comment);
+        return {
+            success: true,
+            message: 'Comments found',
+            status: 200,
+            data: comments
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: 'Failed to get Comments: ' + (error as any).message,
+            status: 500
+        };
+    }
+};
+
+
 
 
