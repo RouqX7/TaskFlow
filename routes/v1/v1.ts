@@ -5,7 +5,7 @@ import AuthController from "../../services/auth/Auth.controller";
 import { v1 } from "firebase-admin/firestore";
 import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
 import { addTeamMember, createProject, getAllProjects, getProjectById, getProjectsByUser, removeTeamMember, updateProject } from "../../services/project/ProjectService";
-
+import { createComment, getAllComments, getComment, updateComment } from "../../services/comment/CommentService";
 const v1Router = Router();
 
 const provider: DatabaseProviderType = process.env
@@ -228,7 +228,7 @@ v1Router.delete(Routes.projects, async (req, res) => {
 v1Router.get(Routes.projects, async (req, res) => {
     try {
         const id = req.query.id as string;
-        const response = await getTask(id);
+        const response = await getProjectById(id);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;
@@ -289,5 +289,80 @@ v1Router.get(Routes.projects, async (req, res) => {
     }
 });
 
+//comment routes
+
+v1Router.post(Routes.comment, async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const response = await createComment(req.body, userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.get(Routes.comment, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await getComment(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+//update
+v1Router.put(Routes.comment, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await updateComment(id, req.body);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.delete(Routes.comment, async (req, res) => {
+    try {
+        const id = req.query?.id as string | undefined;
+        if (!id) {
+            throw new Error("Comment ID is required");
+        }
+        const response = await deleteTask(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
+
+v1Router.get(Routes.commentList, async (req, res) => {
+    try {
+        const response = await getAllComments();
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+});
 
 export default v1Router;

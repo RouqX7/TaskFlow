@@ -17,5 +17,11 @@ export const Routes = {
     addTeamMember: '/projects/:projectId/team/add',
     removeTeamMember: '/projects/:projectId/team/remove',
     //projectById
+
+    //comment routes
+    comment: '/comment',
+    commentList: '/comment/list',
+    
+    
     
 }
