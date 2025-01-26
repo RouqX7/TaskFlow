@@ -6,6 +6,7 @@ import { v1 } from "firebase-admin/firestore";
 import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksByUser, updateTask } from "../../services/tasks/TaskService";
 import { addTeamMember, createProject, getAllProjects, getProjectById, getProjectsByUser, removeTeamMember, updateProject } from "../../services/project/ProjectService";
 import { createComment, getAllComments, getComment, getCommentsByTask, getCommentsByUser, updateComment } from "../../services/comment/CommentService";
+import { createLabel, deleteLabel, getAllLabels, getLabel, getLabelsByColor, getLabelsByName, getLabelsByUser, updateLabel } from "../../services/labels/LabelService";
 const v1Router = Router();
 
 const provider: DatabaseProviderType = process.env
@@ -425,5 +426,133 @@ v1Router.get(Routes.getCommentsByTaskAndUser, async (req, res) => {
     }
 }
 );
+
+//label routes
+
+v1Router.post(Routes.labels, async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const response = await createLabel(req.body, userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.labels, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await getLabel(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+//update
+v1Router.put(Routes.labels, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await updateLabel(id, req.body);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.delete(Routes.labels, async (req, res) => {
+    try {
+        const id = req.query?.id as string | undefined;
+        if (!id) {
+            throw new Error("Label ID is required");
+        }
+        const response = await deleteLabel(id);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.labelList, async (req, res) => {
+    try {
+        const response = await getAllLabels();
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.labelsByUser, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const response = await getLabelsByUser(userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.labelsByColor, async (req, res) => {
+    try {
+        const color = req.params.color;
+        const response = await getLabelsByColor(color);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.labelsByName, async (req, res) => {
+    try {
+        const name = req.params.name;
+        const response = await getLabelsByName(name);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+
+
 
 export default v1Router;
