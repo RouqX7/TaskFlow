@@ -20,6 +20,8 @@ const taskSchema = Joi.object({
     dueDate: Joi.date().default(null),
     createdAt: Joi.date().default(() => new Date()),
     updatedAt: Joi.date().default(() => new Date()),
+    projectId: Joi.string().optional(),
+    labels: Joi.array().items(Joi.string()).optional(),
 });
 
 
@@ -43,6 +45,8 @@ export const createTask = async (task: Partial<Task>, userId: string): Promise<D
             dueDate: task.dueDate ?? null,
             createdAt: new Date(),
             updatedAt: new Date(),
+            projectId: task.projectId ?? undefined,
+            labels: task.labels ?? [],
         } as Task;
 
         const validatedTask = await taskSchema.validateAsync(taskWithDefaults, { abortEarly: false });

@@ -10,5 +10,6 @@ export type Task = {
     dueDate?: Date;
     priority?: "low" | "medium" | "high";
     projectId?: string;
+    labels?: string[]; 
   };
   
