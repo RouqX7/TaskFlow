@@ -34,6 +34,12 @@ export const Routes = {
     labelsByUser: '/labels/user/:userId',
     labelsByColor: '/labels/color/:color',
     labelsByName: '/labels/name/:name',
-    
-    
+
+    //activity routes
+    activities: '/activities',
+    activityList: '/activities/list',
+    activitiesByTask: '/activities/task/:taskId',
+    activitiesByUser: '/activities/user/:userId',
+    activitiesByAction: '/activities/action/:action',
+    activitiesByDetails: '/activities/details/:details',
 }

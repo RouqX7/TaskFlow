@@ -3,5 +3,6 @@ export const DBPath = {
     project:"projects",
     comments:"comments",
     labels:"labels",
+    activities:"activities",
     
 }

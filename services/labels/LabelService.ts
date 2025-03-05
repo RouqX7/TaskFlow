@@ -4,7 +4,7 @@ import { firestoreAdmin } from '../../config/firebase_config';
 import { DBPath } from '../../config/constants';
 import Joi from 'joi';
 import { v4 as uuidv4 } from "uuid";
-import e from 'express';
+
 
 export const labelSchema = Joi.object({ 
     id: Joi.string().required(),

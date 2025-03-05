@@ -7,6 +7,7 @@ import { createTask, deleteTask, getTask, getTasks, getTasksByStatus, getTasksBy
 import { addTeamMember, createProject, getAllProjects, getProjectById, getProjectsByUser, removeTeamMember, updateProject } from "../../services/project/ProjectService";
 import { createComment, getAllComments, getComment, getCommentsByTask, getCommentsByUser, updateComment } from "../../services/comment/CommentService";
 import { createLabel, deleteLabel, getAllLabels, getLabel, getLabelsByColor, getLabelsByName, getLabelsByUser, updateLabel } from "../../services/labels/LabelService";
+import { createActivity, deleteActivity, getActivitiesByAction, getActivitiesByDetails, getActivitiesByTask, getActivitiesByUser, getAllActivities, updateActivity } from "../../services/activity/ActivityService";
 const v1Router = Router();
 
 const provider: DatabaseProviderType = process.env
@@ -551,6 +552,161 @@ v1Router.get(Routes.labelsByName, async (req, res) => {
     }
 }
 );
+
+//activity routes
+
+v1Router.post(Routes.activities, async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const response = await createActivity(req.body, userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.delete(Routes.activities, async(req,res) =>{
+    try {
+        const id = req.query?.id as string | undefined;
+        if(!id){
+            throw new Error("Activity ID is required");
+        }
+        const response = await deleteActivity(id);
+        res.status(response.status)
+        
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+})
+
+v1Router.get(Routes.activities, async (req, res) => {
+    try {
+        const response = await getAllActivities();
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+//update activity
+v1Router.put(Routes.activities, async (req, res) => {
+    try {
+        const id = req.query.id as string;
+        const response = await updateActivity(id, req.body);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activityList, async (req, res) => {
+    try {
+        const response = await getAllActivities();
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activitiesByTask, async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const response = await getCommentsByTask(taskId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activitiesByUser, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const response = await getActivitiesByUser(userId);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activitiesByAction, async (req, res) => {
+    try {
+        const action = req.params.action;
+        const response = await getActivitiesByAction(action);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activitiesByDetails, async (req, res) => {
+    try {
+        const details = req.params.details;
+        const response = await getActivitiesByDetails(details);
+        res.status(response.status).json(response);
+    } catch (err: unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status: "error",
+            message: error.message,
+        });
+    }
+}
+);
+
+v1Router.get(Routes.activitiesByTask,async(req,res) =>{
+    try {
+        const task = req.params.task;
+        const response = await getActivitiesByTask(task);
+        res.status(response.status).json(response);
+    } catch (err : unknown) {
+        const error = err as Error;
+        res.status(500).send({
+            status:"error",
+            message: error.message
+        });
+        
+    }
+})
+
 
 
 
