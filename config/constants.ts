@@ -4,5 +4,7 @@ export const DBPath = {
     comments:"comments",
     labels:"labels",
     activities:"activities",
+    notifications:"notifications",
+    teams:"teams"
     
 }

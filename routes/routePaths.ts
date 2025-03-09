@@ -1,21 +1,21 @@
-import { getCommentsByUser } from "../services/comment/CommentService";
-
 export const Routes = {
     health: '/health',
     login: '/login',
     register: '/register',
     logout: '/logout',
     user: '/user',
+
+    //Task Routes
     tasks: '/tasks',
     taskList: '/tasks/list',
     tasksByUser: '/tasks/user/:userId',
     tasksByStatus: '/tasks/status/:status',
     tasksByAssignee: '/tasks/assignee/:assignee',
+    
     // project routes
     projects: '/projects',
     getProjectsByUser: '/projects/user/:userId' ,
     projectList: '/projects/list',
-
     //project team routes
     addTeamMember: '/projects/:projectId/team/add',
     removeTeamMember: '/projects/:projectId/team/remove',
@@ -42,4 +42,10 @@ export const Routes = {
     activitiesByUser: '/activities/user/:userId',
     activitiesByAction: '/activities/action/:action',
     activitiesByDetails: '/activities/details/:details',
+
+    // Notification Routes
+    notifications: '/notifications',
+    notificationList:'/notification/list',
+
+
 }
