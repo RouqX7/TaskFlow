@@ -22,6 +22,7 @@ export type BasicUserInfo = {
     image?:string|null;
     firstName:string;
     lastName:string;
+    
     bio?:string|null
     isAgreed?: boolean|null;
     location?:LocationData|null;
