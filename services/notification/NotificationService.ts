@@ -1,19 +1,8 @@
-import {Notification} from '../../models/Notification'
+import {Notification, notificationSchema} from '../../models/Notification'
 import { DBResponse } from '../../types';
 import { firestoreAdmin } from '../../config/firebase_config';
 import { DBPath } from '../../config/constants';
-import Joi from 'joi';
 import { v4 as uuidv4 } from "uuid";
-
-export const notificationSchema = Joi.object({
-    id:Joi.string().required(),
-    userId:Joi.string().required(),
-    message:Joi.string().required(),
-    type:Joi.string().required(),
-    read:Joi.boolean().required(),
-    createdAt:Joi.date().default(() => new Date()),
-    updateAt:Joi.date().default(() => new Date()),
-})
 
 export const createNotification = async (
     notification: Partial<Notification>,

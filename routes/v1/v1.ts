@@ -557,8 +557,7 @@ v1Router.get(Routes.labelsByName, async (req, res) => {
 
 v1Router.post(Routes.activities, async (req, res) => {
     try {
-        const userId = req.body.userId;
-        const response = await createActivity(req.body, userId);
+        const response = await createActivity(req.body);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;

@@ -68,3 +68,15 @@ export type DBResponse<T> = {
     errorMessage?: string;
 }
 
+export type ResponseCode = 200 | 400 | 401 | 403 | 404 | 429 | 500;
+
+export type PageInfo = {
+    count: number;
+    total: number;
+    nextPageCursor?: string;
+    previousPageCursor?: string;
+    pageNo: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
+

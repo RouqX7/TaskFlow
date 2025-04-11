@@ -1,65 +1,33 @@
-import{Activity} from '../../models/Activity';
+import{Activity, activitySchema} from '../../models/Activity';
 import { DBResponse } from '../../types';
 import { firestoreAdmin } from '../../config/firebase_config';
 import { DBPath } from '../../config/constants';
-import Joi from 'joi';
 import { v4 as uuidv4 } from "uuid";
-
-export const activitySchema = Joi.object({
-    id: Joi.string().required(),
-    taskId: Joi.string().required(),
-    userId: Joi.string().required(),
-    action: Joi.string().required(),
-    details: Joi.string().required(),
-    createdAt: Joi.date().default(() => new Date()),
-    updatedAt: Joi.date().default(() => new Date()),
-});
+import { DataProvider } from '../../src/providers';
+import {serviceValidators} from '../../utilities/serviceUtilities';
 
 export const createActivity = async (
-    activity: Partial<Activity>,
-    userId: string
+    activity: Activity,
 ): Promise<DBResponse<string>> => {
-    try {
-        if (!userId) {
-            return {
-                success: false,
-                message: "User ID is required",
-                status: 400,
+    return await serviceValidators<Activity,string>({
+        schema: activitySchema,
+        message: "Activity created successfully",
+        errorMessage: "Activity creation failed",
+        data: activity,
+        next: async () => {
+            // Ensure required fields are set
+            const now = new Date();
+            const enrichedActivity = {
+                ...activity,
+                id: activity.id || uuidv4(),
+                createdAt: activity.createdAt || now,
+                updatedAt: activity.updatedAt || now
             };
+            
+            const result = await DataProvider.activityDB.addActivity({ activity: enrichedActivity });
+            return result;
         }
-
-        const activityWithDefaults = {
-            id: uuidv4(),
-            taskId: activity.taskId ?? "",
-            userId: userId,
-            action: activity.action ?? "",
-            details: activity.details ?? "",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        } as Activity;
-
-        const validatedActivity = await activitySchema.validateAsync(activityWithDefaults, {
-            abortEarly: false,
-        });
-
-        await firestoreAdmin
-            .collection(DBPath.activities)
-            .doc(validatedActivity.id)
-            .set(validatedActivity);
-
-        return {
-            success: true,
-            message: "Activity created successfully",
-            status: 200,
-            data: validatedActivity.id,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Validation failed: " + (error as any).message,
-            status: 400,
-        };
-    }
+    });
 };
 
 export const getAllActivities = async (): Promise<DBResponse<Activity[]>> => {
@@ -219,4 +187,3 @@ export const getActivitiesByAction = async (action: string): Promise<DBResponse<
 export const getActivitiesByDetails = async (details: string): Promise<DBResponse<Activity[]>> => {
     return getActivityByField('details', details);
 };
-
