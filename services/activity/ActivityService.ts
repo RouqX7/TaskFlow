@@ -14,176 +14,122 @@ export const createActivity = async (
         message: "Activity created successfully",
         errorMessage: "Activity creation failed",
         data: activity,
-        next: async () => {
-            // Ensure required fields are set
-            const now = new Date();
-            const enrichedActivity = {
-                ...activity,
-                id: activity.id || uuidv4(),
-                createdAt: activity.createdAt || now,
-                updatedAt: activity.updatedAt || now
-            };
-            
-            const result = await DataProvider.activityDB.addActivity({ activity: enrichedActivity });
+        next: async (validatedActivity: Activity) => {
+            const result = await DataProvider.activityDB.addActivity({ activity: validatedActivity });
             return result;
         }
     });
 };
 
 export const getAllActivities = async (): Promise<DBResponse<Activity[]>> => {
-    try {
-        const snapshot = await firestoreAdmin.collection(DBPath.activities).get();
-        const activities: Activity[] = [];
-        snapshot.forEach((doc) => {
-            activities.push(doc.data() as Activity);
-        });
-
-        return {
-            success: true,
-            message: "Activities fetched successfully",
-            status: 200,
-            data: activities,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to fetch activities: " + error,
-            status: 400,
-        };
-    }
+       
+    return await serviceValidators<void, Activity[]>({
+        message: "Activities fetched successfully",
+        errorMessage: "Failed to fetch activities",
+        data: undefined,
+        next: async () => {
+            const result = await DataProvider.activityDB.getAllActivities();
+            return result;
+        }
+    });
 };
 
 export const getActivity = async (id?: string): Promise<DBResponse<Activity>> => {
-    if (!id) {
-        return {
-            success: false,
-            message: "Activity ID is required",
-            status: 400,
-        };
-    }
-    try {
-        const result = await firestoreAdmin.collection(DBPath.activities).doc(id!).get();
-        if (result.exists) {
-            return Promise.resolve({
-                success: true,
-                message: "Activity found",
-                status: 200,
-                data: result.data() as Activity
-            });
-        } else {
-            return {
-                success: false,
-                message: "Activity not found",
-                status: 404
-            };
+    return await serviceValidators<string, Activity>({
+        message: "Activity fetched successfully",
+        errorMessage: "Failed to fetch activity",
+        data: id,
+        next: async (validatedId: string) => {
+            const result = await DataProvider.activityDB.getActivity(validatedId);
+            return result;
         }
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to get Activity: " + (error as any).message,
-            status: 500
-        };
-    }
+    });
 }
 
-export const deleteActivity = async (id?: string): Promise<DBResponse<string>> => { 
-    if (!id) {
-        return {
-            success: false,
-            message: "Activity ID is required",
-            status: 400,
-        };
-    }
-    try {
-        await firestoreAdmin.collection(DBPath.activities).doc(id!).delete();
-        return {
-            success: true,
-            message: "Activity deleted successfully",
-            status: 200,
-            data: id!,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to delete activity: " + (error as any).message,
-            status: 500,
-        };
-    }
+export const deleteActivity = async (id?: string): Promise<DBResponse<string>> => {
+    return await serviceValidators<string, string>({
+        message: "Activity deleted successfully",
+        errorMessage: "Failed to delete activity",
+        data: id,
+        next: async (validatedId: string) => {
+            await DataProvider.activityDB.deleteActivity(validatedId);
+            return validatedId; 
+        }
+    });
 }
 
-export const updateActivity = async (id: string, data: Partial<Activity>): Promise<DBResponse<Activity>> => {
-    if (!id) {
-        return {
-            success: false,
-            message: "Activity ID is required",
-            status: 400,
-        };
-    }
-    try {
-        const partialSchema = activitySchema.fork(Object.keys(activitySchema.describe().keys), (field) =>
-            field.optional()
-        );
-        const validatedData = await partialSchema.validateAsync(
-            {
-                ...data,
-                updatedAt: new Date(),
-            },
-            { abortEarly: false }
-        );
-
-        await firestoreAdmin.collection(DBPath.activities).doc(id).update(validatedData);
-
-        const updatedActivity = await getActivity(id); // Fetch updated task
-        return {
-            success: true,
-            message: "Updated Activity successfully",
-            status: 200,
-            data: updatedActivity.data, // Return updated task
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to update Activity: " + (error as any).message,
-            status: 500,
-        };
-    }
+export const updateActivity = async (id: string, data: Activity): Promise<DBResponse<Activity>> => {
+    return await serviceValidators<Activity, Activity>(
+        {
+            message: "Activity updated successfully",
+            errorMessage: "Failed to update activity",
+            data: data,
+            next: async (validatedData: Activity) => {
+                const result = await DataProvider.activityDB.updateActivity(id, validatedData);
+                return result;
+            }
+        }
+    );
 };
 
 export const getActivityByField = async (field: string, value: string): Promise<DBResponse<Activity[]>> => {
-    try {
-        const snapshot = await firestoreAdmin.collection(DBPath.activities).where(field, '==', value).get();
-        const activities: Activity[] = [];
-        snapshot.forEach((doc) => {
-            activities.push(doc.data() as Activity);
-        });
-
-        return {
-            success: true,
+    return await serviceValidators<string, Activity[]>(
+        {
             message: "Activities fetched successfully",
-            status: 200,
-            data: activities,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to fetch activities: " + error,
-            status: 400,
-        };
-    }
+            errorMessage: "Failed to fetch activities",
+            data: undefined,
+            next: async () => {
+                const result = await DataProvider.activityDB.getActivityByField(field, value);
+                return result;
+            }
+        }
+    );
 };
 
 export const getActivitiesByTask = async (taskId: string): Promise<DBResponse<Activity[]>> => {
-    return getActivityByField('taskId', taskId);
+    return await serviceValidators<string, Activity[]>({
+        message: "Activities fetched successfully",
+        errorMessage: "Failed to fetch activities by task",
+        data: taskId,
+        next: async (validatedId: string) => {
+            const result = await DataProvider.activityDB.getActivitiesByTask(validatedId);
+            return result;
+        }
+    });
 };
 
 export const getActivitiesByUser = async (userId: string): Promise<DBResponse<Activity[]>> => {
-    return getActivityByField('userId', userId);
+    return await serviceValidators<string, Activity[]>({
+        message: "Activities fetched successfully",
+        errorMessage: "Failed to fetch activities by user",
+        data: userId,
+        next: async (validatedId: string) => {
+            const result = await DataProvider.activityDB.getActivitiesByUser(validatedId);
+            return result;
+        }
+    });
 };
 
 export const getActivitiesByAction = async (action: string): Promise<DBResponse<Activity[]>> => {
-    return getActivityByField('action', action);
+    return await serviceValidators<string, Activity[]>({
+        message: "Activities fetched successfully",
+        errorMessage: "Failed to fetch activities by action",
+        data: action,
+        next: async (validatedAction: string) => {
+            const result = await DataProvider.activityDB.getActivitiesByAction(validatedAction);
+            return result;
+        }
+    });
 };
 
 export const getActivitiesByDetails = async (details: string): Promise<DBResponse<Activity[]>> => {
-    return getActivityByField('details', details);
+    return await serviceValidators<string, Activity[]>({
+        message: "Activities fetched successfully",
+        errorMessage: "Failed to fetch activities by details",
+        data: details,
+        next: async (validatedDetails: string) => {
+            const result = await DataProvider.activityDB.getActivitiesByDetails(validatedDetails);
+            return result;
+        }
+    });
 };

@@ -70,19 +70,24 @@ export const errorResponse = ({res, error, code}:{res: Response, error: Error, c
     });
 };
 
-interface ServiceValidatorsParams<T,R> {
+export interface ServiceValidatorsParams<T, R> {
     schema?: Joi.ObjectSchema<T>;
     data?: T;
-    next: (...args: unknown[]) => Promise<R>;
-    message?:string
-    errorMessage?:string
+    next: (validatedData: T) => Promise<R>;
+    message?: string;
+    errorMessage?: string;
 }
 
 export const serviceValidators = async <T,R extends unknown>({schema, data, next,message,errorMessage}: ServiceValidatorsParams<T,R>) : Promise<DBResponse<R>>=> {
     try {
+        let validatedData = data;
         if(schema && data){
             try {
-                await schema.validateAsync(data);
+                // This will apply all the defaults from the schema
+                validatedData = await schema.validateAsync(data, { 
+                    stripUnknown: true,
+                    abortEarly: false
+                });
             } catch (validationError) {
                 return {
                     success: false,
@@ -91,7 +96,7 @@ export const serviceValidators = async <T,R extends unknown>({schema, data, next
                 };
             }
         }
-        const result = await next();
+        const result = await next(validatedData as T);
         return {
             success: true,
             message: message ?? "Data fetched successfully",
