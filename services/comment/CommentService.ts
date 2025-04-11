@@ -1,166 +1,94 @@
- import { Comment } from '../../models/Comment';
+import { TaskComment, commentSchema } from '../../models/Comment';
 import { DBResponse } from '../../types';
 import { firestoreAdmin } from '../../config/firebase_config';
 import { DBPath } from '../../config/constants';
-import Joi from 'joi';
 import { v4 as uuidv4 } from "uuid";
-
-export const commentSchema = Joi.object({
-    id: Joi.string().required(),
-    taskId: Joi.string().required(),
-    userId: Joi.string().required(),
-    content: Joi.string().required(),
-    createdAt: Joi.date().default(() => new Date()),
-    updatedAt: Joi.date().default(() => new Date()),
-});
+import { DataProvider } from '../../src/providers';
+import { serviceValidators } from '../../utilities/serviceUtilities';
 
 export const createComment = async (
-    comment: Partial<Comment>,
-    userId: string
+    comment: TaskComment,
 ): Promise<DBResponse<string>> => {
-    try {
-        if (!userId) {
-            return {
-                success: false,
-                message: "User ID is required",
-                status: 400,
-            };
-        }
-
-        const commentWithDefaults = {
-            id: uuidv4(),
-            taskId: comment.taskId ?? "",
-            userId: userId,
-            content: comment.content ?? "",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        } as Comment;
-
-        const validatedComment = await commentSchema.validateAsync(commentWithDefaults, {
-            abortEarly: false,
-        });
-
-        await firestoreAdmin
-            .collection(DBPath.comments)
-            .doc(validatedComment.id)
-            .set(validatedComment);
-
-        return {
-            success: true,
+    return await serviceValidators<TaskComment, string>(
+        {
+            schema:commentSchema,
             message: "Comment created successfully",
-            status: 200,
-            data: validatedComment.id,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Validation failed: " + (error as any).message,
-            status: 400,
-        };
-    }
+            errorMessage: "Failed to create comment",
+            data: comment,
+            next: async (validatedComment: TaskComment) => {
+                const result = await DataProvider.commentDB.addComment({
+                    comment: validatedComment
+                });
+                return result;
+            }
+        }
+    );
 };
 
-export const getComment = async (id?: string): Promise<DBResponse<Comment>> => {
-        if (!id) {
-            return {
-                success: false,
-                message: "Comment ID is required",
-                status: 400,
-            };
-        }
-        try {
-            const result = await firestoreAdmin.collection(DBPath.comments).doc(id!).get();
-            if (result.exists) {
-                return Promise.resolve({
-                    success: true,
-                    message: "Comment found",
-                    status: 200,
-                    data: result.data() as Comment
-                });
-            } else {
-                return {
-                    success: false,
-                    message: "Comment not found",
-                    status: 404
-                };
+export const getComment = async (id?: string): Promise<DBResponse<TaskComment>> => {
+    return await serviceValidators<string, TaskComment>(
+        {
+            message: "Comment fetched successfully",
+            errorMessage: "Failed to fetch comment",
+            data: id,
+            next: async (validatedId: string) => {
+                const result = await DataProvider.commentDB.getComment(validatedId);
+                return result;
             }
-        } catch (error) {
-            return {
-                success: false,
-                message: "Failed to get Comment: " + (error as any).message,
-                status: 500
-            };
         }
-    }
+    );
+}
 
-    export const updateComment = async (id: string, data: Partial<Comment>): Promise<DBResponse<Comment>> => {
-            if (!id) {
-                return {
-                    success: false,
-                    message: "Comment ID is required",
-                    status: 400,
-                };
+export const updateComment = async (id: string, data: TaskComment): Promise<DBResponse<TaskComment>> => {
+    return await serviceValidators<TaskComment, TaskComment>(
+        {
+            message: "Comment updated successfully",
+            errorMessage: "Failed to update comment",
+            data: data,
+            next: async (validatedData: TaskComment) => {
+                const result = await DataProvider.commentDB.updateComment(id, validatedData);
+                return result;
             }
-            try {
-                const partialSchema = commentSchema.fork(Object.keys(commentSchema.describe().keys), (field) =>
-                    field.optional()
-                );
-                const validatedData = await partialSchema.validateAsync(
-                    {
-                        ...data,
-                        updatedAt: new Date(),
-                    },
-                    { abortEarly: false }
-                );
-        
-                await firestoreAdmin.collection(DBPath.comments).doc(id).update(validatedData);
-        
-                const updatedComment = await getComment(id); // Fetch updated task
-                return {
-                    success: true,
-                    message: "Comment updated successfully",
-                    status: 200,
-                    data: updatedComment.data, // Return updated task
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: "Failed to update Comment: " + (error as any).message,
-                    status: 500,
-                };
-            }
-        };
+        }
+    );
+};
 
 export const deleteComment = async (id: string): Promise<DBResponse<string>> => {
-    if (!id) {
-        return {
-            success: false,
-            message: "Comment ID is required",
-            status: 400,
-        };
-    }
-    try {
-        await firestoreAdmin.collection(DBPath.comments).doc(id).delete();
-        return {
-            success: true,
+    return await serviceValidators<string, string>(
+        {
             message: "Comment deleted successfully",
-            status: 200,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: "Failed to delete Comment: " + (error as any).message,
-            status: 500,
-        };
-    }
+            errorMessage: "Failed to delete comment",
+            data: id,
+            next: async (validatedId: string) => {
+                await DataProvider.commentDB.deleteComment(validatedId);
+                return validatedId;
+            }
+        }
+    );
 };
 
-export const getAllComments = async (): Promise<DBResponse<Comment[]>> => {
+export const updatedComment = async(id: string, data: TaskComment): Promise<DBResponse<TaskComment>> => {
+    return await serviceValidators<TaskComment, TaskComment>(
+        {
+            message: "Comment updated successfully",
+            errorMessage: "Failed to update comment",
+            data: data,
+            next: async (validatedData: TaskComment) => {
+                const result = await DataProvider.commentDB.updateComment(id, validatedData);
+                return result;
+            }
+        }
+    );
+};
+                
+            
+
+export const getAllComments = async (): Promise<DBResponse<TaskComment[]>> => {
     try {
         const result = await firestoreAdmin.collection(DBPath.comments).get();
-        const comments: Comment[] = [];
+        const comments: TaskComment[] = [];
         result.forEach((doc) => {
-            comments.push(doc.data() as Comment);
+            comments.push(doc.data() as TaskComment);
         });
         return {
             success: true,
@@ -177,64 +105,65 @@ export const getAllComments = async (): Promise<DBResponse<Comment[]>> => {
     }
 };
 
- const queryCommentsByField = async (field: string, value: string): Promise<DBResponse<Comment[]>> => {
-    try{
-        const result = await firestoreAdmin
-        .collection(DBPath.comments)
-        .where(field, '==', value)
-        .get();
-        const comments: Comment[] = result.docs.map((doc) => doc.data() as Comment);
-        return {
-            success: true,
-            message: 'Comments found',
-            status: 200,
-            data: comments
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: 'Failed to get Comments: ' + (error as any).message,
-            status: 500
-        };
-    }
+ const getCommentByField = async (field: string, value: string): Promise<DBResponse<TaskComment[]>> => {
+    return await serviceValidators<string, TaskComment[]>(
+        {
+            message: "Comments fetched successfully",
+            errorMessage: "Failed to fetch comments",
+            data: undefined,
+            next: async () => {
+                const result = await DataProvider.commentDB.getCommentByField(field, value);
+                return result;
+            }
+        }
+    );
 };
 
-export const getCommentsByTask = async (taskId: string): Promise<DBResponse<Comment[]>> => {
-    return queryCommentsByField('taskId', taskId);
+export const getCommentsByTask = async (taskId: string): Promise<DBResponse<TaskComment[]>> => {
+    return await serviceValidators({
+        message: "Comments fetched successfully",
+        errorMessage: "Failed to fetch comments by task",
+        data: taskId,
+        next: async () => {
+            const result = await DataProvider.commentDB.getCommentsByTask(taskId);
+            return result;
+        }
+    });
 };
 
-export const getCommentsByUser = async (userId: string): Promise<DBResponse<Comment[]>> => {
-    return queryCommentsByField('userId', userId);
+export const getCommentsByUser = async (userId: string): Promise<DBResponse<TaskComment[]>> => {
+    return await serviceValidators({
+        message: "Comments fetched successfully",
+        errorMessage: "Failed to fetch comments by user",
+        data: userId,
+        next: async () => {
+            const result = await DataProvider.commentDB.getCommentsByUser(userId);
+            return result;
+        }
+    });
 };
 
-export const getCommentsByContent = async (content: string): Promise<DBResponse<Comment[]>> => {
-    return queryCommentsByField('content', content);
-};
-
-
-export const getCommentsByTaskAndUser = async (taskId: string, userId: string): Promise<DBResponse<Comment[]>> => {
-    try {
-        const result = await firestoreAdmin
-            .collection(DBPath.comments)
-            .where('taskId', '==', taskId)
-            .where('userId', '==', userId)
-            .get();
-        const comments: Comment[] = result.docs.map((doc) => doc.data() as Comment);
-        return {
-            success: true,
-            message: 'Comments found',
-            status: 200,
-            data: comments
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: 'Failed to get Comments: ' + (error as any).message,
-            status: 500
-        };
-    }
+export const getCommentsByContent = async (content: string): Promise<DBResponse<TaskComment[]>> => {
+    return await serviceValidators({
+        message: "Comments fetched successfully",
+        errorMessage: "Failed to fetch comments by content",
+        data: content,
+        next: async () => {
+            const result = await DataProvider.commentDB.getCommentsByContent(content);
+            return result;
+        }
+    });
 };
 
 
-
-
+export const getCommentsByTaskAndUser = async (taskId: string, userId: string): Promise<DBResponse<TaskComment[]>> => {
+    return await serviceValidators({
+        message: "Comments fetched successfully",
+        errorMessage: "Failed to fetch comments by task and user",
+        data: { taskId, userId },
+        next: async () => {
+            const result = await DataProvider.commentDB.getCommentsByTaskAndUser(taskId, userId);
+            return result;
+        }
+    });
+};

@@ -295,8 +295,7 @@ v1Router.get(Routes.projects, async (req, res) => {
 
 v1Router.post(Routes.comment, async (req, res) => {
     try {
-        const userId = req.body.userId;
-        const response = await createComment(req.body, userId);
+        const response = await createComment(req.body);
         res.status(response.status).json(response);
     } catch (err: unknown) {
         const error = err as Error;
